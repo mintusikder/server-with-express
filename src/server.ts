@@ -4,11 +4,22 @@ const app = express();
 const port = 5000;
 
 const pool = new Pool({
-  connectionString: `postgresql://neondb_owner:npg_p4V6NGOYsILi@ep-icy-glitter-an2qt46p-pooler.c-6.us-east-1.aws.neon.tech/neondb?sslmode=verify-full&channel_binding=require`,
+  connectionString: `postgresql://neondb_owner:npg_w7DXa0pFoBId@ep-restless-fog-a1v6zppn-pooler.ap-southeast-1.aws.neon.tech/neondb?sslmode=verify-full&channel_binding=require`,
 });
+// pool.on('connect', () => {
+//   console.log('Database connected successfully! ✅');
+// });
+// pool.on("error", (error, client) => {
+//   console.log(error);
+// });
 //create table
 const initDB = async () => {
-  await pool.query(`
+  try {
+    // console.log("start")
+    // await pool.connect()
+    // const res = await pool.query('SELECT NOW()');
+    // console.log('Database Connected Successfully at:', res.rows[0].now);
+    await pool.query(`
         CREATE TABLE IF NOT EXISTS users(
         id SERIAL PRIMARY KEY,
         name VARCHAR(100) NOT NULL,
@@ -20,12 +31,22 @@ const initDB = async () => {
         updated_at TIMESTAMP DEFAULT NOW()
         )
         `);
-//   await pool.query(`
-//                 CREATE TABLE IF NOT EXISTS todos(
-//                 id SERIAL PRIMARY KEY,
-//                 user_id INT
-//                 )
-//             `);
+    // console.log(await pool.query ("select * from users"))
+    await pool.query(`
+                  CREATE TABLE IF NOT EXISTS todos(
+                  id SERIAL PRIMARY KEY,
+                  user_id INT REFERENCES users(id) ON DELETE CASCADE, 
+                  title VARCHAR(200) NOT NULL,
+                  description TEXT,
+                  completed BOOLEAN DEFAULT false,
+                  due_data DATE,
+                  created_at TIMESTAMP DEFAULT NOW(),
+                  updated_at TIMESTAMP DEFAULT NOW()
+                  )
+              `);
+  } catch (error) {
+    console.log(error);
+  }
 };
 initDB();
 //parser
