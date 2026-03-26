@@ -1,9 +1,9 @@
 import express, { Request, Response } from "express";
 import { Pool } from "pg";
 const app = express();
-import dotenv from 'dotenv';
-import path from "path"
-dotenv.config({path: path.join(process.cwd() ,".env")});
+import dotenv from "dotenv";
+import path from "path";
+dotenv.config({ path: path.join(process.cwd(), ".env") });
 const port = 5000;
 
 const pool = new Pool({
@@ -59,13 +59,30 @@ app.use(express.json());
 app.get("/", (req: Request, res: Response) => {
   res.send("Hello World ff!");
 });
-
-app.post("/", (req: Request, res: Response) => {
+//users CRUD
+app.post("/users", async (req: Request, res: Response) => {
+  const { name, email } = req.body;
   console.log(req.body);
-  res.status(201).json({
-    success: true,
-    message: "Api is work",
-  });
+  try {
+    const result = await pool.query(
+      `INSERT INTO users(name, email) VALUES($1, $2) RETURNING *`,
+      [name, email],
+    );
+    // console.log(result.rows[0]);
+    res.status(201).json({
+      success: false,
+      message: "data insert success",
+      data: result.rows[0]
+    });
+    // res.send({
+    //   message: "data insert",
+    // });
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+    });
+  }
 });
 
 app.listen(port, () => {
