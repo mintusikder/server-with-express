@@ -3,6 +3,7 @@ import { Pool } from "pg";
 const app = express();
 import dotenv from "dotenv";
 import path from "path";
+import { error } from "console";
 dotenv.config({ path: path.join(process.cwd(), ".env") });
 const port = 5000;
 
@@ -90,9 +91,39 @@ app.get("/users", async (req: Request, res: Response) => {
     const result = await pool.query(`SELECT * FROM users`);
     res.status(200).json({
       success: true,
-      message : "Users reseved success",
-      data: result.rows
+      message: "Users reseved success",
+      data: result.rows,
     });
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+      details: error,
+    });
+  }
+});
+//get single users
+app.get("/users/:id", async (req: Request, res: Response) => {
+  // console.log(req.params.id);
+  // res.send({
+  //   message: "Api is cool---",
+  // });
+  const result = await pool.query(`SELECT * FROM users WHERE id = $1`, [
+    req.params.id,
+  ]);
+  try {
+    if (result.rows.length === 0) {
+      res.status(404).json({
+        success: false,
+        message: "User not found",
+      });
+    } else {
+      res.status(200).json({
+        success: true,
+        message: "User success",
+        data : result.rows[0]
+      });
+    }
   } catch (error: any) {
     res.status(500).json({
       success: false,
