@@ -72,7 +72,7 @@ app.post("/users", async (req: Request, res: Response) => {
     res.status(201).json({
       success: false,
       message: "data insert success",
-      data: result.rows[0]
+      data: result.rows[0],
     });
     // res.send({
     //   message: "data insert",
@@ -81,6 +81,23 @@ app.post("/users", async (req: Request, res: Response) => {
     res.status(500).json({
       success: false,
       message: error.message,
+    });
+  }
+});
+//data niye asa get CRUD
+app.get("/users", async (req: Request, res: Response) => {
+  try {
+    const result = await pool.query(`SELECT * FROM users`);
+    res.status(200).json({
+      success: true,
+      message : "Users reseved success",
+      data: result.rows
+    });
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      message: error.message,
+      details: error,
     });
   }
 });
