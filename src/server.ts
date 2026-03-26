@@ -1,9 +1,8 @@
-import express, { Request, Response } from "express";
+import express, { NextFunction, Request, Response } from "express";
 import { Pool } from "pg";
 const app = express();
 import dotenv from "dotenv";
 import path from "path";
-import { error } from "console";
 dotenv.config({ path: path.join(process.cwd(), ".env") });
 const port = 5000;
 
@@ -53,11 +52,19 @@ const initDB = async () => {
   }
 };
 initDB();
+
+//logger middleware
+
+const logger = (req: Request, res: Response, next: NextFunction) => {
+  console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}\n`);
+  next()
+};
+
 //parser
 app.use(express.json());
 // app.use(express.urlencoded())
 
-app.get("/", (req: Request, res: Response) => {
+app.get("/", logger, (req: Request, res: Response) => {
   res.send("Hello World ff!");
 });
 //users CRUD
@@ -206,14 +213,14 @@ app.post("/todos", async (req: Request, res: Response) => {
     );
     res.status(201).json({
       success: true,
-      message : "todo create",
-      data: result.rows[0]
-    })
+      message: "todo create",
+      data: result.rows[0],
+    });
   } catch (error: any) {
     res.status(500).json({
       success: false,
-      message: error.message
-    })
+      message: error.message,
+    });
   }
 });
 //get todos
@@ -232,6 +239,14 @@ app.get("/todos", async (req: Request, res: Response) => {
       details: error,
     });
   }
+});
+
+app.use((req, res) => {
+  res.status(404).json({
+    success: false,
+    message: "Route not found",
+    path: req.path,
+  });
 });
 
 app.listen(port, () => {
