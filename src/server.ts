@@ -1,12 +1,9 @@
 import express, { NextFunction, Request, Response } from "express";
-import { Pool } from "pg";
-import dotenv from "dotenv";
-import path from "path";
-
-dotenv.config({ path: path.join(process.cwd(), ".env") });
+import config from "./config";
+import initDB, { pool, query } from "./config/db";
 
 const app = express();
-const port = 5000;
+const port = config.port;
 
 // Middleware
 app.use(express.json());
@@ -14,42 +11,6 @@ app.use(express.json());
 const logger = (req: Request, res: Response, next: NextFunction) => {
   console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`);
   next();
-};
-
-// Database
-const pool = new Pool({
-  connectionString: process.env.DB_URL,
-});
-
-// Helper for queries
-const query = (text: string, params?: any[]) => pool.query(text, params);
-
-// Init DB
-const initDB = async () => {
-  try {
-    await query(`
-      CREATE TABLE IF NOT EXISTS users(
-        id SERIAL PRIMARY KEY,
-        name VARCHAR(100) NOT NULL,
-        email VARCHAR(100) UNIQUE NOT NULL,
-        created_at TIMESTAMP DEFAULT NOW()
-      )
-    `);
-
-    await query(`
-      CREATE TABLE IF NOT EXISTS todos(
-        id SERIAL PRIMARY KEY,
-        user_id INT REFERENCES users(id) ON DELETE CASCADE,
-        title VARCHAR(200) NOT NULL,
-        completed BOOLEAN DEFAULT false,
-        created_at TIMESTAMP DEFAULT NOW()
-      )
-    `);
-
-    console.log("✅ Database initialized");
-  } catch (err) {
-    console.error("❌ DB Init Error:", err);
-  }
 };
 
 initDB();
@@ -60,7 +21,7 @@ const sendResponse = (
   status: number,
   success: boolean,
   message: string,
-  data?: any
+  data?: any,
 ) => {
   res.status(status).json({ success, message, data });
 };
@@ -74,7 +35,7 @@ app.post("/users", logger, async (req, res) => {
 
     const result = await query(
       `INSERT INTO users(name,email) VALUES($1,$2) RETURNING *`,
-      [name, email]
+      [name, email],
     );
 
     sendResponse(res, 201, true, "User created", result.rows[0]);
@@ -117,7 +78,7 @@ app.put("/users/:id", logger, async (req, res) => {
 
     const result = await query(
       `UPDATE users SET name=$1,email=$2 WHERE id=$3 RETURNING *`,
-      [name, email, req.params.id]
+      [name, email, req.params.id],
     );
 
     if (!result.rows.length) {
@@ -156,7 +117,7 @@ app.post("/todos", logger, async (req, res) => {
 
     const result = await query(
       `INSERT INTO todos(user_id,title) VALUES($1,$2) RETURNING *`,
-      [user_id, title]
+      [user_id, title],
     );
 
     sendResponse(res, 201, true, "Todo created", result.rows[0]);
@@ -199,7 +160,7 @@ app.put("/todos/:id", logger, async (req, res) => {
 
     const result = await query(
       `UPDATE todos SET title=$1, completed=$2 WHERE id=$3 RETURNING *`,
-      [title, completed, req.params.id]
+      [title, completed, req.params.id],
     );
 
     if (!result.rows.length) {
