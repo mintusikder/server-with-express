@@ -24,51 +24,8 @@ export const sendResponse = (
 };
 
 /* ================= USERS ================= */
-
 // Create user
 app.use("/users", userRoutes)
-
-// Get all users
-app.get("/users",);
-
-// Get single user
-
-// Update user
-app.put("/users/:id", logger, async (req, res) => {
-  try {
-    const { name, email } = req.body;
-
-    const result = await query(
-      `UPDATE users SET name=$1,email=$2 WHERE id=$3 RETURNING *`,
-      [name, email, req.params.id],
-    );
-
-    if (!result.rows.length) {
-      return sendResponse(res, 404, false, "User not found");
-    }
-
-    sendResponse(res, 200, true, "User updated", result.rows[0]);
-  } catch (err: any) {
-    sendResponse(res, 500, false, err.message);
-  }
-});
-
-// Delete user
-app.delete("/users/:id", logger, async (req, res) => {
-  try {
-    const result = await query(`DELETE FROM users WHERE id=$1`, [
-      req.params.id,
-    ]);
-
-    if (!result.rowCount) {
-      return sendResponse(res, 404, false, "User not found");
-    }
-
-    sendResponse(res, 200, true, "User deleted");
-  } catch (err: any) {
-    sendResponse(res, 500, false, err.message);
-  }
-});
 
 /* ================= TODOS ================= */
 
