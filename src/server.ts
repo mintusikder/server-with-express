@@ -8,9 +8,7 @@ const app = express();
 const port = config.port;
 
 // Middleware
-
 app.use(express.json()); // ✅ correct
-
 //DB
 initDB();
 
@@ -25,7 +23,6 @@ export const sendResponse = (
   res.status(status).json({ success, message, data });
 };
 
-
 /* ================= USERS ================= */
 
 // Create user
@@ -35,21 +32,6 @@ app.use("/users", userRoutes)
 app.get("/users",);
 
 // Get single user
-// app.get("/users/:id", logger, async (req, res) => {
-//   try {
-//     const result = await query(`SELECT * FROM users WHERE id=$1`, [
-//       req.params.id,
-//     ]);
-
-//     if (!result.rows.length) {
-//       return sendResponse(res, 404, false, "User not found");
-//     }
-
-//     sendResponse(res, 200, true, "User fetched", result.rows[0]);
-//   } catch (err: any) {
-//     sendResponse(res, 500, false, err.message);
-//   }
-// });
 
 // Update user
 app.put("/users/:id", logger, async (req, res) => {
