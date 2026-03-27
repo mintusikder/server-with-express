@@ -1,22 +1,21 @@
 import express, { NextFunction, Request, Response } from "express";
 import config from "./config";
-import initDB, { pool, query } from "./config/db";
+import initDB, { query } from "./config/db";
+import { logger } from "./middleware/logger";
+import { userRoutes } from "./modules/user/user.routes";
 
 const app = express();
 const port = config.port;
 
 // Middleware
-app.use(express.json());
 
-const logger = (req: Request, res: Response, next: NextFunction) => {
-  console.log(`[${new Date().toISOString()}] ${req.method} ${req.path}`);
-  next();
-};
+app.use(express.json()); // ✅ correct
 
+//DB
 initDB();
 
 // Response helper
-const sendResponse = (
+export const sendResponse = (
   res: Response,
   status: number,
   success: boolean,
@@ -26,50 +25,31 @@ const sendResponse = (
   res.status(status).json({ success, message, data });
 };
 
+
 /* ================= USERS ================= */
 
 // Create user
-app.post("/users", logger, async (req, res) => {
-  try {
-    const { name, email } = req.body;
-
-    const result = await query(
-      `INSERT INTO users(name,email) VALUES($1,$2) RETURNING *`,
-      [name, email],
-    );
-
-    sendResponse(res, 201, true, "User created", result.rows[0]);
-  } catch (err: any) {
-    sendResponse(res, 500, false, err.message);
-  }
-});
+app.use("/users", userRoutes)
 
 // Get all users
-app.get("/users", logger, async (req, res) => {
-  try {
-    const result = await query(`SELECT * FROM users`);
-    sendResponse(res, 200, true, "Users fetched", result.rows);
-  } catch (err: any) {
-    sendResponse(res, 500, false, err.message);
-  }
-});
+app.get("/users",);
 
 // Get single user
-app.get("/users/:id", logger, async (req, res) => {
-  try {
-    const result = await query(`SELECT * FROM users WHERE id=$1`, [
-      req.params.id,
-    ]);
+// app.get("/users/:id", logger, async (req, res) => {
+//   try {
+//     const result = await query(`SELECT * FROM users WHERE id=$1`, [
+//       req.params.id,
+//     ]);
 
-    if (!result.rows.length) {
-      return sendResponse(res, 404, false, "User not found");
-    }
+//     if (!result.rows.length) {
+//       return sendResponse(res, 404, false, "User not found");
+//     }
 
-    sendResponse(res, 200, true, "User fetched", result.rows[0]);
-  } catch (err: any) {
-    sendResponse(res, 500, false, err.message);
-  }
-});
+//     sendResponse(res, 200, true, "User fetched", result.rows[0]);
+//   } catch (err: any) {
+//     sendResponse(res, 500, false, err.message);
+//   }
+// });
 
 // Update user
 app.put("/users/:id", logger, async (req, res) => {
