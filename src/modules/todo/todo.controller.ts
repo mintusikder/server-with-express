@@ -4,9 +4,9 @@ import { todoService } from "./todo.service";
 
 const createTodo = async (req: Request, res: Response) => {
   try {
-    const { user_id, title } = req.body;
+    // const { user_id, title } = req.body;
 
-    const result = await todoService.createTodo({user_id, title});
+    const result = await todoService.createTodo(req.body);
 
     sendResponse(res, 201, true, "Todo created", result.rows[0]);
   } catch (err: any) {

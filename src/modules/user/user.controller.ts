@@ -4,8 +4,8 @@ import { userServices } from "./user.service";
 
 const createUser = async (req: Request, res: Response) => {
   try {
-    const { name, email } = req.body;
-    const result = await userServices.createUser(name, email);
+
+    const result = await userServices.createUser(req.body);
 
     sendResponse(res, 201, true, "User created", result.rows[0]);
   } catch (err: any) {
