@@ -1,8 +1,8 @@
-import express, { NextFunction, Request, Response } from "express";
+import express, { Response } from "express";
 import config from "./config";
-import initDB, { query } from "./config/db";
-import { logger } from "./middleware/logger";
+import initDB from "./config/db";
 import { userRoutes } from "./modules/user/user.routes";
+import { todoRoutes } from "./modules/todo/todo.routes";
 
 const app = express();
 const port = config.port;
@@ -24,90 +24,14 @@ export const sendResponse = (
 };
 
 /* ================= USERS ================= */
+
 // Create user
 app.use("/users", userRoutes)
 
 /* ================= TODOS ================= */
 
 // Create todo
-app.post("/todos", logger, async (req, res) => {
-  try {
-    const { user_id, title } = req.body;
-
-    const result = await query(
-      `INSERT INTO todos(user_id,title) VALUES($1,$2) RETURNING *`,
-      [user_id, title],
-    );
-
-    sendResponse(res, 201, true, "Todo created", result.rows[0]);
-  } catch (err: any) {
-    sendResponse(res, 500, false, err.message);
-  }
-});
-
-// Get all todos
-app.get("/todos", logger, async (req, res) => {
-  try {
-    const result = await query(`SELECT * FROM todos`);
-    sendResponse(res, 200, true, "Todos fetched", result.rows);
-  } catch (err: any) {
-    sendResponse(res, 500, false, err.message);
-  }
-});
-
-// Get single todo
-app.get("/todos/:id", logger, async (req, res) => {
-  try {
-    const result = await query(`SELECT * FROM todos WHERE id=$1`, [
-      req.params.id,
-    ]);
-
-    if (!result.rows.length) {
-      return sendResponse(res, 404, false, "Todo not found");
-    }
-
-    sendResponse(res, 200, true, "Todo fetched", result.rows[0]);
-  } catch (err: any) {
-    sendResponse(res, 500, false, err.message);
-  }
-});
-
-// Update todo ✅ FIXED
-app.put("/todos/:id", logger, async (req, res) => {
-  try {
-    const { title, completed } = req.body;
-
-    const result = await query(
-      `UPDATE todos SET title=$1, completed=$2 WHERE id=$3 RETURNING *`,
-      [title, completed, req.params.id],
-    );
-
-    if (!result.rows.length) {
-      return sendResponse(res, 404, false, "Todo not found");
-    }
-
-    sendResponse(res, 200, true, "Todo updated", result.rows[0]);
-  } catch (err: any) {
-    sendResponse(res, 500, false, err.message);
-  }
-});
-
-// Delete todo
-app.delete("/todos/:id", logger, async (req, res) => {
-  try {
-    const result = await query(`DELETE FROM todos WHERE id=$1`, [
-      req.params.id,
-    ]);
-
-    if (!result.rowCount) {
-      return sendResponse(res, 404, false, "Todo not found");
-    }
-
-    sendResponse(res, 200, true, "Todo deleted");
-  } catch (err: any) {
-    sendResponse(res, 500, false, err.message);
-  }
-});
+app.use("/todos", todoRoutes)
 
 /* ================= 404 ================= */
 
