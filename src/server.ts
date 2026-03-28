@@ -3,6 +3,7 @@ import config from "./config";
 import initDB from "./config/db";
 import { userRoutes } from "./modules/user/user.routes";
 import { todoRoutes } from "./modules/todo/todo.routes";
+import { authRouter } from "./modules/auth/auth.routes";
 
 const app = express();
 const port = config.port;
@@ -26,12 +27,16 @@ export const sendResponse = (
 /* ================= USERS ================= */
 
 // Create user
-app.use("/users", userRoutes)
+app.use("/users", userRoutes);
 
 /* ================= TODOS ================= */
 
 // Create todo
-app.use("/todos", todoRoutes)
+app.use("/todos", todoRoutes);
+
+/* ================= AUTH ================= */
+//  Create Auth
+app.use("/auth", authRouter);
 
 /* ================= 404 ================= */
 
