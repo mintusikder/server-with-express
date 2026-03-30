@@ -1,7 +1,7 @@
 import { NextFunction, Response, Request } from "express";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import config from "../config";
-const auth = () => {
+const auth = (...roles: string[]) => {
   return async (req: Request, res: Response, next: NextFunction) => {
     try {
       const authToken = req.headers.authorization;
@@ -10,9 +10,12 @@ const auth = () => {
       if (!token) {
         return res.status(500).json({ message: "Yow are na allow" });
       }
-      const decoded = jwt.verify(token, config.jwtSecret as string);
+      const decoded = jwt.verify(token, config.jwtSecret as string) as JwtPayload;
       console.log({ decoded });
-      req.user = decoded as JwtPayload;
+      req.user = decoded ;
+      if(roles.length && !roles.includes(decoded.role)){
+        return res.status(403).json({ message: "You are not allowed to access this resource" });
+      }
       next();
     } catch (err) {
       res.status(500).json({
