@@ -1,6 +1,8 @@
 import { Request, Response } from "express";
 import { authServices } from "./auth.service";
-import { sendResponse } from "../../server";
+import sendResponse from "../../utils/sendResponse";
+
+
 const userLogin = async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
@@ -11,6 +13,6 @@ const userLogin = async (req: Request, res: Response) => {
   }
 };
 
-export const authController ={
-  userLogin
-}
+export const authController = {
+  userLogin,
+};

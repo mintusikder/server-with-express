@@ -1,6 +1,7 @@
 import express, { Request, Response } from "express";
-import { sendResponse } from "../../server";
+
 import { todoService } from "./todo.service";
+import sendResponse from "../../utils/sendResponse";
 
 const createTodo = async (req: Request, res: Response) => {
   try {

@@ -2,7 +2,10 @@ import { Pool } from "pg";
 import config from ".";
 // Database
 export const pool = new Pool({
-  connectionString: config.connection_str,
+  connectionString: process.env.DB_URL,
+  ssl: {
+    rejectUnauthorized: false,
+  },
 });
 
 // Helper for queries
